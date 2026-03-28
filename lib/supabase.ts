@@ -1,53 +1,35 @@
 // lib/supabase.ts
 // ─────────────────────────────────────────────────────────────────────────────
-// Supabase client factory.
-// We need TWO separate clients in Next.js 14 App Router:
-//   1. Browser client — used in Client Components ('use client')
-//   2. Server client — used in Server Components & Route Handlers
+// BROWSER-ONLY Supabase client factory.
 //
-// Both use Row Level Security (RLS) — users only ever see their own data.
+// ✅ Safe to import in:  'use client' components, hooks, lib/store.tsx
+// ❌ Do NOT import in:   Server Components, Route Handlers, middleware
+//
+// WHY TWO FILES?
+// Next.js enforces a hard boundary between client and server code.
+// `next/headers` (used by the server client) crashes when bundled
+// into client-side JS. Keeping them in separate files ensures the
+// bundler never accidentally includes server code in the client bundle.
+//
+// For server-side Supabase usage → lib/supabase-server.ts
+// For middleware                  → inline client in middleware.ts
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { createBrowserClient } from '@supabase/ssr'
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
-import { cookies } from 'next/headers'
 
-// Read from environment variables (set in .env.local)
+// These are NEXT_PUBLIC_ prefixed so they're safe to expose in the browser.
+// They don't give admin access — Row Level Security enforces data isolation.
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 /**
- * Browser client — singleton pattern for Client Components.
- * Import `supabase` from this file in any 'use client' component.
+ * Creates a Supabase client for use in browser/client-side code.
+ *
+ * @example
+ * // Inside any 'use client' hook or component:
+ * const supabase = createClient()
+ * const { data } = await supabase.from('weight_logs').select('*')
  */
 export function createClient() {
   return createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-}
-
-/**
- * Server client — created fresh per request in Server Components and API routes.
- * Reads/writes cookies for session management.
- */
-export function createServerClientInstance() {
-  const cookieStore = cookies()
-
-  return createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    cookies: {
-      get(name: string) {
-        return cookieStore.get(name)?.value
-      },
-      set(name: string, value: string, options: CookieOptions) {
-        try {
-          cookieStore.set({ name, value, ...options })
-        } catch {
-          // Server Components can't set cookies — handled by middleware
-        }
-      },
-      remove(name: string, options: CookieOptions) {
-        try {
-          cookieStore.set({ name, value: '', ...options })
-        } catch {}
-      },
-    },
-  })
 }
