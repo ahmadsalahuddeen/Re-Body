@@ -1,0 +1,121 @@
+/* app/globals.css
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Base styles, CSS custom properties, and font loading.
+ * Tailwind handles utilities — this file handles:
+ *   1. Font imports
+ *   2. CSS custom properties (used by some inline styles & animations)
+ *   3. Base resets beyond Tailwind's preflight
+ *   4. Scrollbar styling
+ *   5. Mobile safe-area handling
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── CSS CUSTOM PROPERTIES ───────────────────────────────────────────────── */
+:root {
+  /* Registered for use in Canvas (sparkline) and SVG ring */
+  --accent:       #E8A045;
+  --accent-glow:  rgba(232, 160, 69, 0.30);
+  --rest-color:   #4A9EBF;
+  --bg:           #0A0A0B;
+
+  /* Font variables — set by next/font in layout.tsx */
+  --font-display: 'Barlow Condensed', sans-serif;
+  --font-body:    'Barlow', sans-serif;
+}
+
+/* ── BASE RESETS ─────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* Prevent font size inflation on orientation change (iOS) */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* Use dynamic viewport height — critical for mobile */
+  height: 100dvh;
+}
+
+body {
+  background-color: #0A0A0B;
+  color: #F0EDE8;
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Prevent overscroll bounce on iOS pulling in weird directions */
+  overscroll-behavior: none;
+  min-height: 100dvh;
+}
+
+/* ── SCROLLBAR ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar        { width: 3px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: rgba(255,255,255,0.10); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.20); }
+
+/* ── SELECTION ───────────────────────────────────────────────────────────── */
+::selection {
+  background: rgba(232, 160, 69, 0.25);
+  color: #F0EDE8;
+}
+
+/* ── FOCUS VISIBLE ───────────────────────────────────────────────────────── */
+/* Replace default blue ring with brand-appropriate style */
+:focus-visible {
+  outline: 2px solid rgba(232, 160, 69, 0.6);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── MOBILE SAFE AREA ────────────────────────────────────────────────────── */
+/* Bottom nav needs padding for iPhone home indicator */
+.pb-safe {
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+.pt-safe {
+  padding-top: max(0px, env(safe-area-inset-top));
+}
+
+/* ── INPUT RESET ─────────────────────────────────────────────────────────── */
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type='number'] { -moz-appearance: textfield; }
+
+/* ── OVERRIDES FOR YOUTUBE EMBED ─────────────────────────────────────────── */
+/* Remove YouTube iframe border on some browsers */
+iframe { border: none; }
+
+/* ── UTILITY: GRAIN OVERLAY ──────────────────────────────────────────────── */
+/* Adds subtle texture to dark backgrounds — applied as a pseudo element */
+.grain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 1;
+}
+
+/* ── UTILITY: CARD HOVER GLOW ────────────────────────────────────────────── */
+.card-hover {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+.card-hover:hover {
+  border-color: rgba(255,255,255,0.12);
+}
+.card-hover:active {
+  transform: scale(0.985);
+}
+
+/* ── FRAMER MOTION: PREVENT LAYOUT SHIFT ────────────────────────────────── */
+[data-framer-component-type] { display: block; }
