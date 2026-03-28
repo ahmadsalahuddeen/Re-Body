@@ -103,8 +103,8 @@ export default function MirrorPage() {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
-              capture="environment"     /* Opens camera on mobile */
+accept="image/*,.heic,.HEIC,.jpg,.jpeg,.png"
+              // capture="environment"     /* Opens camera on mobile */
               className="hidden"
               onChange={handleFileChange}
             />
